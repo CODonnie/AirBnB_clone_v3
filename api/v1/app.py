@@ -1,33 +1,45 @@
 #!/usr/bin/python3
 """
-Flask App that integrates with AirBnB static HTML Template
+app
 """
+
 from flask import Flask, jsonify
-from models import storage
+from flask_cors import CORS
+from os import getenv
+
 from api.v1.views import app_views
+from models import storage
+
 
 app = Flask(__name__)
+
+CORS(app, resources={r"/*": {"origins": "0.0.0.0"}})
+
 app.register_blueprint(app_views)
 
 
 @app.teardown_appcontext
-def teardown_db(exception):
+def teardown(exception):
     """
-    After each request, this method calls .close() (i.e. .remove()) on
-    the current SQLAlchemy Session.
+    teardown function
     """
     storage.close()
 
 
-@app.route('/api/v1/status', methods=['GET'])
-def status():
+@app.errorhandler(404)
+def handle_404(exception):
     """
-    Returns the status of the API
+    handles 404 error
+    :return: returns 404 json
     """
-    return jsonify({"status": "OK"})
+    data = {
+        "error": "Not found"
+    }
 
+    resp = jsonify(data)
+    resp.status_code = 404
+
+    return(resp)
 
 if __name__ == "__main__":
-    host = environ.get('HBNB_API_HOST', '0.0.0.0')
-    port = environ.get('HBNB_API_PORT', '5000')
-    app.run(host=host, port=port, threaded=True)
+    app.run(getenv("HBNB_API_HOST"), getenv("HBNB_API_PORT"))
