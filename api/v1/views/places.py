@@ -1,12 +1,11 @@
 #!/usr/bin/python3
-
 """
-Place views for the API.
+route for handling Place objects and operations
 """
-
 from flask import jsonify, abort, request
 from api.v1.views import app_views, storage
 from models.place import Place
+
 
 @app_views.route("/cities/<city_id>/places", methods=["GET"],
                  strict_slashes=False)
@@ -21,6 +20,7 @@ def places_by_city(city_id):
         place_list.append(obj.to_json())
 
     return jsonify(place_list)
+
 
 @app_views.route("/cities/<city_id>/places", methods=["POST"],
                  strict_slashes=False)
@@ -50,6 +50,7 @@ def place_create(city_id):
 
     return resp
 
+
 @app_views.route("/places/<place_id>",  methods=["GET"],
                  strict_slashes=False)
 def place_by_id(place_id):
@@ -65,6 +66,7 @@ def place_by_id(place_id):
         abort(404)
 
     return jsonify(fetched_obj.to_json())
+
 
 @app_views.route("/places/<place_id>",  methods=["PUT"],
                  strict_slashes=False)
@@ -92,6 +94,7 @@ def place_put(place_id):
 
     return jsonify(fetched_obj.to_json())
 
+
 @app_views.route("/places/<place_id>",  methods=["DELETE"],
                  strict_slashes=False)
 def place_delete_by_id(place_id):
@@ -110,3 +113,4 @@ def place_delete_by_id(place_id):
     storage.save()
 
     return jsonify({})
+
