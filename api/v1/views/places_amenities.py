@@ -6,7 +6,8 @@ from flask import jsonify, abort
 from os import getenv
 
 from api.v1.views import app_views, storage
-
+from api.v1.serializers.places_amenities import PlaceAmenitySerializer
+from api.v1.models import Place, Amenity
 
 @app_views.route("/places/<place_id>/amenities",
                  methods=["GET"],
@@ -19,10 +20,10 @@ def amenity_by_place(place_id):
     """
     fetched_obj = storage.get("Place", str(place_id))
 
-    all_amenities = []
-
     if fetched_obj is None:
         abort(404)
+
+    all_amenities = []
 
     for obj in fetched_obj.amenities:
         all_amenities.append(obj.to_json())
@@ -103,3 +104,50 @@ def link_amenity_to_place(place_id, amenity_id):
     resp.status_code = 201
 
     return resp
+
+
+@app_views.route("/places/<place_id>/amenities", methods=["GET"], strict_slashes=False)
+def get_amenities_by_place(place_id):
+    """
+    get all amenities of a place
+    :param place_id: amenity id
+    :return: all amenities
+    """
+    fetched_obj = storage.get("Place", str(place_id))
+
+    if fetched_obj is None:
+        abort(404)
+
+    all_amenities = []
+
+    for obj in fetched_obj.amenities:
+        all_amenities.append(obj.to_json())
+
+    return jsonify(all_amenities)
+
+
+@app_views.route("/places/<place_id>/amenities/<amenity_id>", methods=["DELETE"], strict_slashes=False)
+def delete_amenity_by_place(place_id, amenity_id):
+    """
+    delete an amenity from a place
+    :param place_id: place id
+    :param amenity_id: amenity id
+    :return: empty dict or error
+    """
+    fetched_obj = storage.get("Place", str(place_id))
+    amenity_obj = storage.get("Amenity", str(amenity_id))
+
+    if fetched_obj is None or amenity_obj is None:
+        abort(404)
+
+    if not fetched_obj.amenities.filter(id=amenity_id).exists():
+        abort(404)
+
+    fetched_obj.amenities.remove(amenity_obj)
+    fetched_obj.save()
+
+    return jsonify({})
+
+
+@app_views.route("/places/<place_id>/amenities/<amenity_id>", methods=["POST"], strict_slashes=False)
+def link_amenity_to_place(place

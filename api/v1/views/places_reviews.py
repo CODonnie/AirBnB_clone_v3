@@ -1,11 +1,12 @@
 #!/usr/bin/python3
+
 """
-route for handling Review objects and operations
+Review views for the API.
 """
+
 from flask import jsonify, abort, request
 from api.v1.views import app_views, storage
 from models.review import Review
-
 
 @app_views.route("/places/<place_id>/reviews", methods=["GET"],
                  strict_slashes=False)
@@ -25,12 +26,11 @@ def reviews_by_place(place_id):
 
     return jsonify(review_list)
 
-
 @app_views.route("/places/<place_id>/reviews", methods=["POST"],
                  strict_slashes=False)
 def review_create(place_id):
     """
-    create REview route
+    create Review route
     :return: newly created Review obj
     """
     review_json = request.get_json(silent=True)
@@ -54,7 +54,6 @@ def review_create(place_id):
 
     return resp
 
-
 @app_views.route("/reviews/<review_id>",  methods=["GET"],
                  strict_slashes=False)
 def review_by_id(review_id):
@@ -71,7 +70,6 @@ def review_by_id(review_id):
 
     return jsonify(fetched_obj.to_json())
 
-
 @app_views.route("/reviews/<review_id>",  methods=["PUT"],
                  strict_slashes=False)
 def review_put(review_id):
@@ -80,9 +78,9 @@ def review_put(review_id):
     :param review_id: Review object ID
     :return: Review object and 200 on success, or 400 or 404 on failure
     """
-    place_json = request.get_json(silent=True)
+    review_json = request.get_json(silent=True)
 
-    if place_json is None:
+    if review_json is None:
         abort(400, 'Not a JSON')
 
     fetched_obj = storage.get("Review", str(review_id))
@@ -90,15 +88,13 @@ def review_put(review_id):
     if fetched_obj is None:
         abort(404)
 
-    for key, val in place_json.items():
-        if key not in ["id", "created_at", "updated_at", "user_id",
-                       "place_id"]:
+    for key, val in review_json.items():
+        if key not in ["id", "created_at", "updated_at", "user_id", "place_id"]:
             setattr(fetched_obj, key, val)
 
     fetched_obj.save()
 
     return jsonify(fetched_obj.to_json())
-
 
 @app_views.route("/reviews/<review_id>",  methods=["DELETE"],
                  strict_slashes=False)
